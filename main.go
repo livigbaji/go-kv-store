@@ -36,6 +36,31 @@ func (ts *TransactionStack) Peek() *Transaction {
 	return ts.top
 }
 
+func (ts *TransactionStack) Commit() {
+	ActiveTransaction := ts.Peek()
+	if ActiveTransaction != nil {
+		for key, value := range ActiveTransaction.store {
+			GLobalStore[key] = value
+			if ActiveTransaction != nil {
+				ActiveTransaction.next.store[key] = value
+			}
+		}
+	} else {
+		fmt.Printf("Info: Nothing to commit\n")
+	}
+	// TODO write to disk
+}
+
+func (ts *TransactionStack) RollbackTransaction() {
+	if ts.top == nil {
+		fmt.Printf("Error: No Active Transaction\n")
+	} else {
+		for key := range ts.top.store {
+			delete(ts.top.store, key)
+		}
+	}
+}
+
 func main() {
 
 }

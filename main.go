@@ -1,8 +1,13 @@
 package main
 
-import "fmt"
+import (
+	"bufio"
+	"fmt"
+	"os"
+	"strings"
+)
 
-var GLobalStore = make(map[string]string)
+var GlobalStore = make(map[string]string)
 
 type Transaction struct {
 	store map[string]string
@@ -40,7 +45,7 @@ func (ts *TransactionStack) Commit() {
 	ActiveTransaction := ts.Peek()
 	if ActiveTransaction != nil {
 		for key, value := range ActiveTransaction.store {
-			GLobalStore[key] = value
+			GlobalStore[key] = value
 			if ActiveTransaction != nil {
 				ActiveTransaction.next.store[key] = value
 			}
@@ -61,6 +66,62 @@ func (ts *TransactionStack) RollbackTransaction() {
 	}
 }
 
-func main() {
+func Get(key string, T *TransactionStack) {
+	ActiveTransaction := T.Peek()
+	if ActiveTransaction == nil {
+		if val, ok := GlobalStore[key]; ok {
+			fmt.Printf("%s\n", val)
+		} else {
+			fmt.Printf("%s not set\n", key)
+		}
+	} else {
+		if val, ok := ActiveTransaction.store[key]; ok {
+			fmt.Printf("%s\n", val)
+		} else {
+			fmt.Printf("%s not set\n", key)
+		}
+	}
+}
 
+func Set(key string, value string, T *TransactionStack) {
+	ActiveTransaction := T.Peek()
+	if ActiveTransaction == nil {
+		GlobalStore[key] = value
+	} else {
+		ActiveTransaction.store[key] = value
+	}
+}
+
+func main() {
+	reader := bufio.NewReader(os.Stdin)
+	items := &TransactionStack{}
+	for {
+		fmt.Printf("> ")
+		text, _ := reader.ReadString('\n')
+		// split the text into operation strings
+		operation := strings.Fields(text)
+		switch operation[0] {
+		case "BEGIN":
+			items.PushTransaction()
+		case "ROLLBACK":
+			items.RollbackTransaction()
+		case "COMMIT":
+			items.Commit()
+			items.PopTransaction()
+		case "END":
+			items.PopTransaction()
+		case "SET":
+			Set(operation[1], operation[2], items)
+		case "GET":
+			Get(operation[1], items)
+		//case "DELETE":
+		//	Delete(operation[1], items)
+		//case "COUNT":
+		//	Count(operation[1], items)
+		case "STOP":
+			os.Exit(0)
+		default:
+			fmt.Printf("ERROR: Unrecognised Operation %s\n", operation[0])
+		}
+	}
 }

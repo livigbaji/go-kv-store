@@ -99,6 +99,13 @@ func Delete(key string, T *TransactionStack) {
 	} else {
 		delete(ActiveTransaction.store, key)
 	}
+
+	fmt.Printf("%s Deleted\n", key)
+}
+
+func Count(T *TransactionStack) {
+	// still not sure
+	fmt.Printf("%d\n", T.size)
 }
 
 func main() {
@@ -125,8 +132,9 @@ func main() {
 			Get(operation[1], items)
 		case "DELETE":
 			Delete(operation[1], items)
-		//case "COUNT":
-		//	Count(operation[1], items)
+		case "COUNT":
+			// Count(operation[1], items)
+			Count(items)
 		case "STOP":
 			os.Exit(0)
 		default:

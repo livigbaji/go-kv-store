@@ -92,6 +92,15 @@ func Set(key string, value string, T *TransactionStack) {
 	}
 }
 
+func Delete(key string, T *TransactionStack) {
+	ActiveTransaction := T.Peek()
+	if ActiveTransaction == nil {
+		delete(GlobalStore, key)
+	} else {
+		delete(ActiveTransaction.store, key)
+	}
+}
+
 func main() {
 	reader := bufio.NewReader(os.Stdin)
 	items := &TransactionStack{}
@@ -114,8 +123,8 @@ func main() {
 			Set(operation[1], operation[2], items)
 		case "GET":
 			Get(operation[1], items)
-		//case "DELETE":
-		//	Delete(operation[1], items)
+		case "DELETE":
+			Delete(operation[1], items)
 		//case "COUNT":
 		//	Count(operation[1], items)
 		case "STOP":
